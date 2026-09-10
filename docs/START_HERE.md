@@ -125,7 +125,7 @@ This diagram shows how our CSV data becomes useful information in the Solar Buil
 **1. Start with two groups of CSV files**
 
 * **Product CSV files** contain solar panels, inverters, batteries, prices and suppliers.
-* **Simulated monitoring CSV** contains example readings showing solar production, household electricity use and battery charge every five minutes.
+* **Simulated monitoring CSV** This is the **telemetry.csv** that contains example readings showing solar production, household electricity use and battery charge every five minutes.
 
 **2. Import the files into the database**
 

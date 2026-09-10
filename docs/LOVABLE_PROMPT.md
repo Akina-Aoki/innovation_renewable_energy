@@ -1,58 +1,503 @@
-Build a working hackathon prototype called “Solar Builder” for one Philippine household. This is Part 2 of a wider clean-energy project. Its main purpose is helping a household plan, customize, compare and source a solar setup, with simulated post-installation monitoring. Think of selecting parts in a custom PC builder, but use original solar-focused branding and interface design. Do not build the other project parts.
+# Solar Builder — Lovable Prototype Instructions
 
-Use the attached demo_seed.json as canonical data, or the matching CSV tables if supplied instead. Do not fabricate different catalog prices or dashboard numbers. All products, suppliers, prices and readings are fictional. Show a compact “Demo · synthetic data” label throughout. Do not use names, addresses or account details from reference screenshots.
+## 1. Project overview
 
-Deliver a responsive app with a clean white background, dark navy text, solar-green accents, warm yellow for household load and blue for battery status. Use readable cards and spacing. Desktop navigation: My Household, Build a System, Compare, My Checklist, Monitoring. Provide a mobile layout. Use plain English and short definitions of kW, kWh and battery SOC.
+Build a working hackathon prototype called **Solar Builder** for **one Philippine household**.
 
-Implement the frontend and the simplest managed backend/database available in this project. Seed idempotently using the supplied IDs. Store saved builds and checklist progress; for a public demo, keep changes isolated per browser/session, with no publicly writable shared household. A localStorage demo fallback is acceptable if backend provisioning is unavailable; explicitly describe that implementation limitation in your completion message. No paid APIs or real hardware integration are needed. Use actual data-backed UI interactions, not static screens.
+This is **Part 2 of a wider clean-energy project**. Build only this part.
 
-Data tables supplied: households, panels, inverters, batteries, suppliers, listings, configurations, installed_systems, telemetry, daily_summary. Read START_HERE.md if attached for the full data contract. Fields ending _kw are power, _kwh energy, _php currency. Timestamp UTC is canonical; group/render dates in Asia/Manila. telemetry's key is (system_id,timestamp_utc); daily_summary is derived, not extra energy.
+The app helps a household:
 
-1. MY HOUSEHOLD
-Preload HH001: monthly consumption 450 kWh, budget ₱250,000, Hybrid, critical load 0.5 kW, backup goal 8 hours. Editable consumption, budget, critical load and backup goal. Keep Hybrid as the supported prototype type; On-grid and Off-grid may appear labeled “future option” and must not pretend to work. Location is Laguna Philippines. Editable estimate assumptions: 4.5 peak sun hours/day, performance ratio 0.8, tariff ₱12/kWh (illustrative).
+1. Enter its electricity needs and budget.
+2. Choose and customize solar equipment.
+3. Compare different setups.
+4. Create a shopping checklist.
+5. Explore simulated monitoring after installation.
 
-2. BUILD A SYSTEM
-Show rows for panel model and quantity, inverter, battery model and quantity, plus other equipment/installation allowance. Browse seeded catalog models and supplier offers, update total immediately, show solar kWp, nominal battery kWh, remaining budget and explanatory preliminary compatibility results. No actual checkout.
+Think of a custom PC builder, where users select compatible parts, but use original solar-focused branding and interface design.
 
-Use lowest-price seeded in-stock offers with sufficient quantity for each selected component. Price = panel quantity × panel offer + inverter offer + battery quantity × battery offer + other allowance. Configuration seed totals must be Budget ₱143,000; Balanced ₱227,000; More Solar ₱245,000. Keep allowance visible and editable; do not present it as a supplier quote or itemized equipment list.
+## 2. Demo data
 
-Show required PV estimate = (monthly kWh / 30)/(peak sun hours × performance ratio). Monthly generation = selected PV kWp × peak sun hours × performance ratio × 30. Backup estimate = battery nominal kWh × 0.75 × 0.95 / critical load kW, assuming 95% starting SOC and 20% reserve. Explain assumptions; reject nonpositive inputs. Do not promise bill savings, ROI, off-grid independence or guaranteed runtime from these estimates.
+Use **`demo_seed.json`** as the main source of data.
 
-Run preliminary checks: positive integer quantities; PV kWp <= inverter maximum PV; series_count × Vmp within MPPT range; series_count × Voc below max DC voltage; parallel_strings × Imp and Isc within inverter current limits; MPPT count; battery operating voltage range within inverter battery range; fictional bms_family match; supported parallel battery count; stock; budget. In this demo all panels form one series string on one MPPT. Warn that temperature-adjusted voltage and professional design review are still needed, particularly near voltage limits. Demo High Voltage 10 must fail battery voltage and BMS checks against both seeded inverters. Use “passes preliminary demo checks,” never “certified safe.” Failed feasibility checks exclude a build from eligible recommendations; they cannot be outweighed by price or a ranking score.
+If the matching CSV files are supplied instead, use those. These are alternative ways to import the same dataset; do not import both as additional records.
 
-3. COMPARE
-Compare three seeded configurations side by side: total cost, PV kWp, nominal battery kWh, estimated monthly generation, estimated backup hours at the selected critical load, budget and preliminary check results. Make trade-offs readable. Selecting a build takes the user to its shopping checklist. If no eligible build fits input constraints, say so honestly. Do not silently change budget.
+### Data rules
 
-4. CHECKLIST AND INSTALLATION HANDOFF
-Generate the selected build's item quantities, chosen fictional supplier and prices. Track Not purchased / Ordered / Received; persist per session. Show mounting, protection, cabling and professional installation as “scope and quote to confirm,” covered only by an illustrative allowance. Do not invent cable sizes, breaker ratings or real supplier URLs. Provide a downloadable shopping CSV.
-Offer a handoff summary with the chosen components and unresolved design checks. No electrical wiring tutorial, hardware control, real booking, payment or email submission. Button “Explore demo installed system” opens monitoring of SYS001, explicitly the seeded Balanced system. Merely checking items as received must not claim a system has actually been installed or commissioned.
+* Use the supplied catalog prices and monitoring readings.
+* Do not invent replacement prices or dashboard numbers.
+* All products, suppliers, prices and readings are fictional.
+* Display a compact **“Demo · synthetic data”** label throughout the app.
+* Do not use personal names, addresses or account details from reference screenshots.
 
-5. MONITORING
-Only SYS001 corresponds to the fixed Balanced system C2: 4.4 kWp PV, 5 kW inverter and 10.24 kWh battery. Historical data must remain attached to this system even when a different shopping build is selected.
+### Supplied tables
 
-Use telemetry for September 3–9, 2026 (2,016 five-minute intervals). Default to September 9, latest available completed interval. Provide local date picker and 7-day view. Do not default to today's actual date and show an empty chart. Weather information is not supplied; omit it. No fake live badge.
+| Table               | Purpose                                |
+| ------------------- | -------------------------------------- |
+| `households`        | Household needs and budget             |
+| `panels`            | Solar panel models                     |
+| `inverters`         | Inverter models                        |
+| `batteries`         | Battery models                         |
+| `suppliers`         | Fictional suppliers                    |
+| `listings`          | Supplier prices and availability       |
+| `configurations`    | Proposed solar setups                  |
+| `installed_systems` | Fixed demo installation                |
+| `telemetry`         | Five-minute monitoring readings        |
+| `daily_summary`     | Daily totals calculated from telemetry |
 
-Top cards: selected-day solar yield at bus in kWh, household energy in kWh, grid import in kWh, and interval-end battery SOC %. Add a power-flow diagram connecting solar, inverter/bus, battery, grid and home, inspired by the functional content of the provided screenshots. Use solar_bus_power_kw in the diagram so the flow balances. Make solar_dc_power_kw available as a separately labeled detail. Power cards show the selected interval average, not an instantaneous physical reading.
+Read **`START_HERE.md`**, if attached, for the full data definitions and calculation rules.
 
-Charts: solar bus power, household load, grid import/export, battery charging/discharging and battery SOC. Power on a kW axis; SOC on a separate 0–100% axis. For a signed battery series only, use discharge_bus_kw − charge_bus_kw; explain positive means discharging and negative means charging. The data itself stores separate nonnegative flows. Offer toggles and readable tooltips.
+### Units and timestamps
 
-Energy = SUM(power_kw × interval_minutes / 60), grouped by local date. Never sum kW as energy. Do not sum SOC. At a selected interval show battery_soc_end_pct. Grid status comes from the row. No simultaneous import/export or charge/discharge is present in this seed.
+* `_kw` means power in kilowatts.
+* `_kwh` means energy in kilowatt-hours.
+* `_php` means Philippine pesos.
+* Store timestamps using UTC.
+* Display and group dates using **Asia/Manila**.
+* Each telemetry row is uniquely identified by `(system_id, timestamp_utc)`.
+* `daily_summary` contains totals derived from telemetry. Do not add these totals to telemetry totals again.
 
-Add Play / Pause / Reset for “Replay simulated readings.” Advance one five-minute row every second on the selected day. Display the interval's end time as data coverage; each row's timestamp is its start. Reveal rows progressively and calculate cards only from revealed rows. Reset clears the selected-day replay totals; pause freezes them. End playback stops. Do not use full-day totals while only showing a partial replay.
+## 3. Design and navigation
 
-Optional small expected-versus-simulated card: full selected days × 4.4 × 4.5 × 0.8 as rough estimated bus yield, compared with solar_bus energy for those same completed days. Clearly name this a demo estimate. Do not compare seven days to a monthly forecast or diagnose hardware faults. Skip ROI and financial forecasts.
+Create a responsive app for desktop and mobile.
 
-AC-equivalent bus balance must hold in the display: solar_bus + battery_discharge_bus + grid_import = load + battery_charge_bus + grid_export. Solar DC is converted to bus at 96% in the seed. Battery stored-energy change includes 95% charge efficiency and 95% discharge efficiency. Show a small “simulation assumptions” disclosure, without exposing engineering details throughout the user journey.
+### Visual style
 
-Acceptance checks before completion:
-- Seed imports do not duplicate rows.
-- Balanced total is ₱227,000 and its monthly generation estimate is 475.2 kWh at the default assumptions.
-- Changing quantities updates total and estimates; reducing budget marks over-budget builds.
-- Selecting high-voltage battery shows the explicit mismatch.
-- Choosing a build generates the correct supplier/quantity checklist; reload preserves this session's choices.
-- Monitoring charts and cards derive from supplied telemetry and match daily_summary for full days within rounding tolerance.
-- Replay cards do not reveal future interval energy; SOC remains 20–95%.
-- Dates use Asia/Manila and latest demo date, not browser timezone or current real date.
-- No real brands, real prices, actual live-device connections, purchases, or safety certification are claimed.
+| Element        | Style                                   |
+| -------------- | --------------------------------------- |
+| Background     | Clean white                             |
+| Main text      | Dark navy                               |
+| Main accents   | Solar green                             |
+| Household load | Warm yellow                             |
+| Battery status | Blue                                    |
+| Layout         | Readable cards with comfortable spacing |
 
-Implement the complete core journey. If token/time constraints force prioritization, finish household → builder → compare → checklist first, then the seeded monitoring page. In your completion response state what works and any remaining limitations.
+Use plain English. Include short explanations of:
+
+* **kW:** How much power is being produced or used.
+* **kWh:** How much electricity is produced or used over time.
+* **Battery SOC:** The battery’s estimated charge percentage.
+
+### Main navigation
+
+1. My Household
+2. Build a System
+3. Compare
+4. My Checklist
+5. Monitoring
+
+## 4. Backend and saved progress
+
+Implement the frontend and the simplest managed backend/database available in this project.
+
+### Required behaviour
+
+* Import the seed data using the supplied IDs.
+* Repeated imports must not create duplicate records.
+* Store saved builds and shopping checklist progress.
+* Keep each visitor’s changes separate by browser or session.
+* Do not allow public visitors to overwrite one shared household record.
+* Build working interactions connected to the supplied data.
+
+If a backend cannot be provisioned, a **localStorage demo fallback** is acceptable. State this limitation in the completion message.
+
+No paid APIs or real hardware connections are needed.
+
+## 5. Page: My Household
+
+Preload household **HH001** with these values:
+
+| Setting                         | Default             | Editable?           |
+| ------------------------------- | ------------------- | ------------------- |
+| Location                        | Laguna, Philippines | Fixed for this demo |
+| Monthly electricity consumption | 450 kWh             | Yes                 |
+| Budget                          | ₱250,000            | Yes                 |
+| System type                     | Hybrid              | Hybrid only         |
+| Critical load                   | 0.5 kW              | Yes                 |
+| Backup goal                     | 8 hours             | Yes                 |
+
+Explain **critical load** as the combined power needed by essential appliances during backup.
+
+On-grid and Off-grid may appear as **“future option”**, but must not behave as working features.
+
+### Editable estimate assumptions
+
+| Assumption             | Default |
+| ---------------------- | ------: |
+| Peak sun hours per day |     4.5 |
+| Performance ratio      |     0.8 |
+| Electricity tariff     | ₱12/kWh |
+
+Label these as illustrative demo assumptions.
+
+## 6. Page: Build a System
+
+Allow the user to choose:
+
+* Solar panel model and quantity.
+* Inverter model.
+* Battery model and quantity.
+* Allowance for other equipment and installation.
+
+Use the supplied catalog models and supplier offers.
+
+### Show these results
+
+Update results immediately when selections change:
+
+* Total estimated cost.
+* Solar capacity in kWp.
+* Nominal battery capacity in kWh.
+* Remaining budget.
+* Estimated monthly generation.
+* Estimated backup hours.
+* Preliminary compatibility results with explanations.
+
+Do not include actual checkout.
+
+### Pricing rules
+
+For each component, choose the lowest-priced seeded offer that is in stock and has enough units.
+
+**Total cost =**
+
+* Panel quantity × panel offer price
+* Plus inverter offer price
+* Plus battery quantity × battery offer price
+* Plus other equipment/installation allowance
+
+The original seeded configurations must have these totals:
+
+| Configuration |    Total |
+| ------------- | -------: |
+| Budget        | ₱143,000 |
+| Balanced      | ₱227,000 |
+| More Solar    | ₱245,000 |
+
+Keep the allowance visible and editable. Explain that it is an illustrative amount, not a supplier quote or an itemized equipment list.
+
+### Estimate formulas
+
+**Required solar capacity in kWp**
+
+`(monthly consumption in kWh / 30) / (peak sun hours × performance ratio)`
+
+**Estimated monthly generation in kWh**
+
+`selected solar kWp × peak sun hours × performance ratio × 30`
+
+**Estimated backup duration in hours**
+
+`nominal battery kWh × 0.75 × 0.95 / critical load kW`
+
+The backup formula assumes:
+
+* Battery starts at 95% charge.
+* 20% remains as reserve.
+* Discharge efficiency is 95%.
+* Critical load remains constant.
+
+Explain the assumptions and reject nonpositive calculation inputs.
+
+Do not promise bill savings, ROI, off-grid independence or guaranteed backup time.
+
+### Preliminary compatibility checks
+
+Run all of these checks:
+
+| Check                      | Rule                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| Component quantities       | Positive whole numbers                                                                        |
+| Solar capacity             | PV kWp ≤ inverter maximum PV capacity                                                         |
+| Solar operating voltage    | `series_count × Vmp` is within the MPPT range                                                 |
+| Solar open-circuit voltage | `series_count × Voc` is below maximum DC voltage                                              |
+| Solar current              | `parallel_strings × Imp` and `parallel_strings × Isc` are within the relevant inverter limits |
+| MPPT count                 | Used MPPTs do not exceed available MPPTs                                                      |
+| Battery voltage            | Battery operating range fits inside the inverter battery range                                |
+| Battery communication      | Fictional `bms_family` values match                                                           |
+| Battery quantity           | Parallel battery count is supported                                                           |
+| Stock                      | Enough units are available                                                                    |
+| Budget                     | Total is within the user’s budget                                                             |
+
+For this demo, all panels form **one series string connected to one MPPT**.
+
+Show a warning that temperature-adjusted voltage checks and professional design review are still required, especially near voltage limits.
+
+**Demo High Voltage 10** must fail the battery voltage and BMS checks against both seeded inverters.
+
+Use the wording:
+
+**“Passes preliminary demo checks.”**
+
+Never describe a build as **“certified safe.”**
+
+A failed feasibility check must exclude the build from eligible recommendations. A low price or high ranking score cannot override a failed check.
+
+## 7. Page: Compare
+
+Compare the three seeded configurations side by side.
+
+Show:
+
+* Total cost.
+* Solar capacity in kWp.
+* Nominal battery capacity in kWh.
+* Estimated monthly generation.
+* Estimated backup hours at the selected critical load.
+* Whether the build is within budget.
+* Preliminary compatibility results.
+
+Make the trade-offs easy to understand.
+
+Selecting a configuration should open its shopping checklist.
+
+If no eligible build fits the user’s constraints, say so clearly. Do not silently increase or change the budget.
+
+## 8. Page: My Checklist
+
+Generate a shopping checklist for the selected build.
+
+### Include
+
+* Component names.
+* Required quantities.
+* Selected fictional suppliers.
+* Supplier prices.
+
+Allow each item to have one of these statuses:
+
+* Not purchased
+* Ordered
+* Received
+
+Save progress for the current browser/session.
+
+Provide a **downloadable shopping CSV**.
+
+### Additional equipment and installation
+
+Show these items as **“scope and quote to confirm”**:
+
+* Mounting.
+* Protection equipment.
+* Cabling.
+* Professional installation.
+
+These are covered only by the illustrative allowance.
+
+Do not invent cable sizes, breaker ratings or real supplier URLs.
+
+### Installation handoff
+
+Provide a summary containing:
+
+* The selected components.
+* The quantities.
+* Any unresolved design checks.
+
+Do not include electrical wiring tutorials, hardware controls, real bookings, payments or email submissions.
+
+Add a button:
+
+**“Explore demo installed system”**
+
+This opens monitoring for **SYS001**, the seeded Balanced installation.
+
+Marking checklist items as “Received” must not claim that a real system has been installed or commissioned.
+
+## 9. Page: Monitoring
+
+### Fixed demo installation
+
+Monitoring belongs only to **SYS001**, linked to **C2 — Balanced**:
+
+| Equipment    |  Capacity |
+| ------------ | --------: |
+| Solar panels |   4.4 kWp |
+| Inverter     |      5 kW |
+| Battery      | 10.24 kWh |
+
+Changing a shopping build must not change which installation these historical readings belong to.
+
+### Dates and data
+
+Use the supplied telemetry:
+
+* September 3–9, 2026.
+* 2,016 five-minute intervals.
+* Asia/Manila timezone.
+
+Default to **September 9**, at the latest available completed interval.
+
+Provide:
+
+* A local date picker.
+* A seven-day view.
+
+Do not default to the current real date and display an empty chart.
+
+Weather data is not supplied, so omit it. Do not show a fake live badge.
+
+### Main dashboard cards
+
+| Card             | Value                                     |
+| ---------------- | ----------------------------------------- |
+| Solar energy     | Selected-day solar bus yield in kWh       |
+| Household energy | Selected-day household consumption in kWh |
+| Grid import      | Selected-day imported energy in kWh       |
+| Battery charge   | Selected interval-end SOC percentage      |
+
+### Power-flow diagram
+
+Connect:
+
+* Solar.
+* Inverter/bus.
+* Battery.
+* Grid.
+* Home.
+
+Use the reference screenshots as inspiration for the information shown.
+
+Use `solar_bus_power_kw` in the diagram so the displayed power flows balance.
+
+Show `solar_dc_power_kw` separately as a clearly labelled detail.
+
+Power values represent the **average during the selected five-minute interval**, not an instantaneous physical reading.
+
+### Charts
+
+Include:
+
+* Solar bus power.
+* Household load.
+* Grid import and export.
+* Battery charging and discharging.
+* Battery SOC.
+
+Use:
+
+* A kW axis for power.
+* A separate 0–100% axis for SOC.
+* Series toggles.
+* Readable tooltips.
+
+If using one signed battery series, calculate:
+
+`battery_discharge_bus_kw − battery_charge_bus_kw`
+
+Explain:
+
+* Positive = discharging.
+* Negative = charging.
+
+The source data keeps charging and discharging as separate nonnegative values.
+
+### Monitoring calculations
+
+Calculate energy using:
+
+`SUM(power_kw × interval_minutes / 60)`
+
+Group daily results by **Asia/Manila date**.
+
+Rules:
+
+* Never sum kW values and label them as kWh.
+* Do not sum SOC percentages.
+* Show `battery_soc_end_pct` for the selected interval.
+* Read grid status from the selected telemetry row.
+* The supplied data has no simultaneous grid import/export or battery charge/discharge.
+
+## 10. Replay simulated readings
+
+Add **Play**, **Pause** and **Reset** controls.
+
+Label this feature:
+
+**“Replay simulated readings.”**
+
+### Playback behaviour
+
+* Advance one five-minute row every second on the selected day.
+* Reveal readings progressively.
+* Calculate cards using only the rows already revealed.
+* Display the interval’s end time as the data coverage time.
+* Remember that each row’s timestamp marks the interval’s start.
+* Pause freezes playback and totals.
+* Reset clears the selected-day replay totals.
+* Stop playback at the end of the day.
+
+Do not show full-day energy totals while replay has only revealed part of the day.
+
+## 11. Optional: Expected versus simulated energy
+
+You may add a small comparison card for completed days.
+
+**Rough estimated bus yield in kWh**
+
+`number of full selected days × 4.4 × 4.5 × 0.8`
+
+Compare this with the simulated solar bus energy for exactly the same completed days.
+
+Label it clearly as a **demo estimate**.
+
+Do not:
+
+* Compare seven days of readings with a monthly forecast.
+* Diagnose hardware faults.
+* Add ROI or financial forecasts.
+
+## 12. Simulation assumptions
+
+The displayed power flows must satisfy:
+
+`solar_bus + battery_discharge_bus + grid_import = load + battery_charge_bus + grid_export`
+
+The supplied simulation assumes:
+
+* Solar DC-to-bus conversion efficiency: 96%.
+* Battery charging efficiency: 95%.
+* Battery discharging efficiency: 95%.
+
+These battery efficiencies affect changes in stored energy.
+
+Provide a small **“Simulation assumptions”** disclosure. Keep detailed engineering explanations out of the main user journey.
+
+## 13. Acceptance checklist
+
+Before completing the app, verify that:
+
+* [ ] Repeated seed imports do not duplicate rows.
+* [ ] The Balanced configuration costs ₱227,000.
+* [ ] Balanced monthly generation is 475.2 kWh using default assumptions.
+* [ ] Changing quantities updates prices and estimates.
+* [ ] Reducing the budget marks affected builds as over budget.
+* [ ] Selecting the high-voltage battery shows the explicit mismatch.
+* [ ] Selecting a build creates the correct supplier and quantity checklist.
+* [ ] Reloading preserves the current session’s choices.
+* [ ] Monitoring cards and charts use the supplied telemetry.
+* [ ] Full-day calculations match `daily_summary` within rounding tolerance.
+* [ ] Replay totals exclude readings that have not yet been revealed.
+* [ ] Battery SOC stays within the supplied 20–95% range.
+* [ ] Dates use Asia/Manila.
+* [ ] Monitoring opens on the latest demo date.
+* [ ] The app does not claim real brands, real prices, live hardware connections, actual purchases or safety certification.
+
+## 14. Build priorities and completion response
+
+Implement the complete core journey:
+
+**My Household → Build a System → Compare → My Checklist → Monitoring**
+
+If time or token limits require prioritisation:
+
+1. Complete household inputs, builder, comparison and checklist.
+2. Complete the monitoring page using the supplied data.
+3. Add optional features only after the core journey works.
+
+In your completion response, state:
+
+* What works.
+* Any remaining limitations.
+* Whether saved progress uses the managed backend or the localStorage fallback.
