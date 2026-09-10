@@ -118,10 +118,35 @@ flowchart TD
     G --> H
 ```
 
-**Import** means loading the CSV data into the database. **Check the format** means confirming that required columns, IDs and values are present. Our data is already cleaned; this is just a check that it is ready for the app.
+### How to read this diagram
+
+This diagram shows how our CSV data becomes useful information in the Solar Builder app.
+
+**1. Start with two groups of CSV files**
+
+* **Product CSV files** contain solar panels, inverters, batteries, prices and suppliers.
+* **Simulated monitoring CSV** contains example readings showing solar production, household electricity use and battery charge every five minutes.
+
+**2. Import the files into the database**
+
+We check that the files have the required columns and correctly formatted values, then load them into the database. The data is already cleaned.
+
+**3. The app uses the data in two ways**
+
+| Solar equipment selection                                                      | Solar monitoring                                                                       |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| The user enters their electricity needs and budget.                            | The app reads the simulated monitoring data.                                           |
+| The app uses the product catalog to help them choose and compare solar setups. | It calculates summaries, such as how much solar electricity was produced during a day. |
+| The chosen setup is saved with a shopping checklist.                           | The results are presented as numbers and charts.                                       |
+
+**4. Display the results in the Lovable app**
+
+The user can view their selected equipment and shopping checklist, or open the monitoring dashboard.
+
+For this prototype, monitoring shows **simulated readings from one fixed demo installation**. Choosing a different shopping setup does not change those historical readings.
 
 
-The demo's ingestion layer is simply importing the clean seed files. Validation means checking the agreed format and rejecting invalid input; it does not mean introducing a cleaning project. Keep one canonical copy and avoid duplicate imports.
+
 
 | Table/file | One row represents | Key and relationships |
 |---|---|---|
